@@ -102,14 +102,6 @@ export default function App() {
     setResponse(null);
 
     try {
-      if (activeEndpoint.id === "yt-mp3") {
-        const downloadUrl = `${activeEndpoint.path}?${activeEndpoint.params[0].name}=${encodeURIComponent(
-          testInput,
-        )}`;
-        setResponse({ downloadUrl });
-        return;
-      }
-
       let res;
       if (activeEndpoint.method === "GET") {
         let url = activeEndpoint.path;
