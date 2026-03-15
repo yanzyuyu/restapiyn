@@ -228,6 +228,48 @@ async function startServer() {
     }
   });
 
+  // 2c. Social Media Downloader API (TikTok, IG, Twitter, FB, etc.)
+  app.get("/api/download/social", async (req, res) => {
+    try {
+      const url = req.query.url as string;
+      if (!url) {
+        return res.status(400).json({ error: "Missing url parameter" });
+      }
+
+      const info = await youtubedl(url, {
+        dumpJson: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+      });
+
+      const formats = info.formats
+        .filter((f: any) => f.url)
+        .map((f: any) => ({
+          format_id: f.format_id,
+          quality: f.format_note || f.resolution || "unknown",
+          ext: f.ext,
+          url: f.url,
+        }));
+
+      // Find the best quality video format
+      const bestFormat = formats[formats.length - 1];
+
+      res.json({
+        success: true,
+        data: {
+          title: info.title || "Video",
+          thumbnail: info.thumbnail || null,
+          duration: info.duration || null,
+          extractor: info.extractor || "unknown",
+          downloadUrl: bestFormat?.url || null,
+          formats,
+        },
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // 3. QR Code Generator API
   app.get("/api/tools/qrcode", async (req, res) => {
     try {

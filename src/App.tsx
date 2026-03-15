@@ -16,7 +16,8 @@ import {
   ChevronRight,
   RefreshCw,
   Clock,
-  ChevronDown
+  ChevronDown,
+  Film
 } from "lucide-react";
 import { extraEndpoints } from "./extra-endpoints";
 import { usefulEndpoints } from "./useful-endpoints";
@@ -54,6 +55,17 @@ const baseEndpoints = [
     params: [{ name: "url", type: "string", description: "YouTube video URL" }],
     icon: <Music className="w-5 h-5" />,
     example: "/api/yt/ytmp3?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  },
+  {
+    id: "social-download",
+    title: "Social Media Downloader",
+    category: "Media Tools",
+    method: "GET",
+    path: "/api/download/social",
+    description: "Download videos from TikTok, Instagram, Twitter, Facebook, etc.",
+    params: [{ name: "url", type: "string", description: "Video URL" }],
+    icon: <Film className="w-5 h-5" />,
+    example: "/api/download/social?url=https://www.tiktok.com/@tiktok/video/123",
   },
   {
     id: "qrcode",
@@ -110,6 +122,7 @@ export default function App() {
   // Accordion State for Categories
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     "YouTube Tools": true,
+    "Media Tools": true,
     "Useful Information": true
   });
 

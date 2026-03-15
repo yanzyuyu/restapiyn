@@ -75,7 +75,7 @@ usefulRouter.get("/fun/joke", async (req, res) => {
 // Random Quote
 usefulRouter.get("/fun/quote", async (req, res) => {
   try {
-    const response = await axios.get("https://api.quotable.io/random");
+    const response = await axios.get("https://dummyjson.com/quotes/random");
     res.json({ success: true, data: response.data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
