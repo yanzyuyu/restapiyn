@@ -8,6 +8,10 @@ import qrcode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
 import { extraRouter } from "./extra-router.js";
 import { usefulRouter } from "./useful-router.js";
+import { coolRouter } from "./cool-router.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 async function startServer() {
   const app = express();
@@ -40,6 +44,7 @@ async function startServer() {
   // Load Extra APIs
   app.use("/api", extraRouter);
   app.use("/api", usefulRouter);
+  app.use("/api", coolRouter);
 
   // API Routes
   app.get("/api/logs", (req, res) => {

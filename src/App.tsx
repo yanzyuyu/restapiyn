@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { extraEndpoints } from "./extra-endpoints";
 import { usefulEndpoints } from "./useful-endpoints";
+import { coolEndpoints } from "./cool-endpoints";
 
 const baseEndpoints = [
   {
@@ -138,7 +139,7 @@ const baseEndpoints = [
   },
 ];
 
-const endpoints = [...baseEndpoints, ...usefulEndpoints, ...extraEndpoints];
+const endpoints = [...baseEndpoints, ...usefulEndpoints, ...coolEndpoints, ...extraEndpoints];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"docs" | "monitor">("docs");
@@ -155,6 +156,7 @@ export default function App() {
   // Accordion State for Categories
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     "Downloader Tools": true,
+    "AI & Smart Tools": true,
     "Useful Information": true
   });
 
