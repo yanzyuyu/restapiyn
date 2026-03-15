@@ -89,6 +89,7 @@ export default function App() {
   const [response, setResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [cookieInput, setCookieInput] = useState("");
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -112,8 +113,17 @@ export default function App() {
       let res;
       if (activeEndpoint.method === "GET") {
         let url = activeEndpoint.path;
+        const params: string[] = [];
         if (activeEndpoint.params.length > 0) {
-          url += `?${activeEndpoint.params[0].name}=${encodeURIComponent(testInput)}`;
+          params.push(
+            `${activeEndpoint.params[0].name}=${encodeURIComponent(testInput)}`,
+          );
+        }
+        if (cookieInput) {
+          params.push(`cookies=${encodeURIComponent(cookieInput)}`);
+        }
+        if (params.length) {
+          url += `?${params.join("&")}`;
         }
         res = await fetch(url);
       } else {
@@ -339,24 +349,30 @@ export default function App() {
                         placeholder={`e.g., ${
                           activeEndpoint.id === "yt-search"
                             ? "never gonna give you up"
-                            : activeEndpoint.id === "yt-download"
-                              ? "https://youtube.com/watch?v=..."
-                              : "Hello World"
+                            : activeEndpoint.id === "yt-download" || activeEndpoint.id === "yt-mp3"
+                            ? "https://youtube.com/watch?v=..."
+                            : "Hello World"
                         }`}
                         className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                       />
                     </div>
                   )}
 
-                  <button
-                    onClick={handleTest}
-                    disabled={
-                      loading || (activeEndpoint.id !== "uuid" && !testInput)
-                    }
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold px-6 py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+                  {(activeEndpoint.id === "yt-download" || activeEndpoint.id === "yt-mp3") && (
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">
+                        YouTube Cookies (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={cookieInput}
+                        onChange={(e) => setCookieInput(e.target.value)}
+                        placeholder="SID=...; HSID=...;" 
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
+                      />
+                      <p className="text-xs text-zinc-500 mt-1">
+                        Optional: add YouTube cookies if the video requires sign-in.
+                      </p>
                     ) : (
                       <>
                         Send Request
