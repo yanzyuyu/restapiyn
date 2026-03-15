@@ -228,43 +228,75 @@ async function startServer() {
     }
   });
 
-  // 2c. Social Media Downloader API (TikTok, IG, Twitter, FB, etc.)
-  app.get("/api/download/social", async (req, res) => {
-    try {
-      const url = req.query.url as string;
-      if (!url) {
-        return res.status(400).json({ error: "Missing url parameter" });
-      }
-
-      const info = await youtubedl(url, {
+  // A helper function for generic yt-dlp extracting
+  const extractMediaInfo = async (url: string) => {
+    const info = await youtubedl(url, {
         dumpJson: true,
         noCheckCertificates: true,
         noWarnings: true,
-      });
-
-      const formats = info.formats
+    });
+    const formats = info.formats
         .filter((f: any) => f.url)
         .map((f: any) => ({
-          format_id: f.format_id,
-          quality: f.format_note || f.resolution || "unknown",
-          ext: f.ext,
-          url: f.url,
+            format_id: f.format_id,
+            quality: f.format_note || f.resolution || "unknown",
+            ext: f.ext,
+            url: f.url,
         }));
+    const bestFormat = formats[formats.length - 1];
+    return {
+        title: info.title || "Video",
+        thumbnail: info.thumbnail || null,
+        duration: info.duration || null,
+        extractor: info.extractor || "unknown",
+        downloadUrl: bestFormat?.url || null,
+        formats,
+    };
+  };
 
-      // Find the best quality video format
-      const bestFormat = formats[formats.length - 1];
+  // 2c. TikTok Downloader
+  app.get("/api/download/tiktok", async (req, res) => {
+    try {
+      const url = req.query.url as string;
+      if (!url) return res.status(400).json({ error: "Missing url parameter" });
+      const data = await extractMediaInfo(url);
+      res.json({ success: true, data });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
 
-      res.json({
-        success: true,
-        data: {
-          title: info.title || "Video",
-          thumbnail: info.thumbnail || null,
-          duration: info.duration || null,
-          extractor: info.extractor || "unknown",
-          downloadUrl: bestFormat?.url || null,
-          formats,
-        },
-      });
+  // 2d. Instagram Downloader
+  app.get("/api/download/ig", async (req, res) => {
+    try {
+      const url = req.query.url as string;
+      if (!url) return res.status(400).json({ error: "Missing url parameter" });
+      const data = await extractMediaInfo(url);
+      res.json({ success: true, data });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 2e. Twitter Downloader
+  app.get("/api/download/twitter", async (req, res) => {
+    try {
+      const url = req.query.url as string;
+      if (!url) return res.status(400).json({ error: "Missing url parameter" });
+      const data = await extractMediaInfo(url);
+      res.json({ success: true, data });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // 2f. Facebook Downloader
+  app.get("/api/download/fb", async (req, res) => {
+    try {
+      const url = req.query.url as string;
+      if (!url) return res.status(400).json({ error: "Missing url parameter" });
+      const data = await extractMediaInfo(url);
+      res.json({ success: true, data });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
     }
