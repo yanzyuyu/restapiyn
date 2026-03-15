@@ -432,25 +432,25 @@ export default function App() {
                             {JSON.stringify(response, null, 2)}
                           </pre>
                         </div>
-                      ) : activeEndpoint.id === "yt-mp3" && response.streamUrl ? (
-                        <div className="space-y-3">
-                          <a
-                            href={response.streamUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20"
-                          >
-                            Download MP3
-                            <ChevronRight className="w-4 h-4" />
-                          </a>
-                          <pre className="text-xs text-zinc-400 font-mono w-full overflow-x-auto">
+                      ) : (
+                        <>
+                          {activeEndpoint.id === "yt-mp3" && response.streamUrl && (
+                            <div className="mb-3">
+                              <a
+                                href={response.streamUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20"
+                              >
+                                Download MP3
+                                <ChevronRight className="w-4 h-4" />
+                              </a>
+                            </div>
+                          )}
+                          <pre className="text-sm text-zinc-300 font-mono">
                             {JSON.stringify(response, null, 2)}
                           </pre>
-                        </div>
-                      ) : (
-                        <pre className="text-sm text-zinc-300 font-mono">
-                          {JSON.stringify(response, null, 2)}
-                        </pre>
+                        </>
                       )}
                     </div>
                   </div>
