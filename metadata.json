@@ -1,0 +1,5 @@
+{
+  "name": "NexusAPI",
+  "description": "A full-featured REST API with YouTube downloader, search, QR code generator, and more.",
+  "requestFramePermissions": []
+}
