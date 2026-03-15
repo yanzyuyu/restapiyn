@@ -26,7 +26,7 @@ const baseEndpoints = [
   {
     id: "yt-search",
     title: "YouTube Search",
-    category: "YouTube Tools",
+    category: "Downloader Tools",
     method: "GET",
     path: "/api/yt/search",
     description: "Search for YouTube videos by keyword.",
@@ -37,7 +37,7 @@ const baseEndpoints = [
   {
     id: "yt-download",
     title: "YouTube Downloader",
-    category: "YouTube Tools",
+    category: "Downloader Tools",
     method: "GET",
     path: "/api/yt/download",
     description: "Get download links and video info for a YouTube URL.",
@@ -48,7 +48,7 @@ const baseEndpoints = [
   {
     id: "yt-mp3",
     title: "YouTube MP3",
-    category: "YouTube Tools",
+    category: "Downloader Tools",
     method: "GET",
     path: "/api/yt/ytmp3",
     description: "Download MP3 audio from a YouTube URL.",
@@ -59,7 +59,7 @@ const baseEndpoints = [
   {
     id: "social-download",
     title: "Social Media Downloader",
-    category: "Media Tools",
+    category: "Downloader Tools",
     method: "GET",
     path: "/api/download/social",
     description: "Download videos from TikTok, Instagram, Twitter, Facebook, etc.",
@@ -121,8 +121,7 @@ export default function App() {
 
   // Accordion State for Categories
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
-    "YouTube Tools": true,
-    "Media Tools": true,
+    "Downloader Tools": true,
     "Useful Information": true
   });
 
