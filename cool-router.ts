@@ -1,28 +1,30 @@
 import { Router } from "express";
-import { GoogleGenAI } from "@google/genai";
 import natural from "natural";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import axios from "axios";
+import { search } from "duck-duck-scrape";
 
 export const coolRouter = Router();
 
-// 1. Google Gemini AI API (If GEMINI_API_KEY is available)
-coolRouter.post("/ai/gemini", async (req, res) => {
+// 1. Free Image Search API (using DuckDuckGo)
+coolRouter.get("/tools/image-search", async (req, res) => {
   try {
-    const { prompt } = req.body;
-    if (!prompt) return res.status(400).json({ error: "Missing prompt in body" });
+    const query = req.query.q as string;
+    if (!query) return res.status(400).json({ error: "Missing query parameter 'q'" });
     
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ success: false, error: "GEMINI_API_KEY is not configured on the server." });
-    }
-
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
+    const searchResults = await search(query, {
+      safeSearch: "moderate"
     });
 
-    res.json({ success: true, data: { reply: response.text } });
+    // Extract image results if they exist, or just general web results
+    const results = searchResults.results.slice(0, 10).map(r => ({
+      title: r.title,
+      description: r.description,
+      url: r.url,
+      icon: r.icon
+    }));
+
+    res.json({ success: true, data: results });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -52,14 +54,19 @@ coolRouter.get("/nlp/sentiment", (req, res) => {
   }
 });
 
-// 3. Natural Language Processing (Language Detection)
-coolRouter.get("/nlp/detect-language", (req, res) => {
+// 3. Natural Language Processing (Language Detection Mock -> Auto Correct/Suggest)
+coolRouter.get("/nlp/spell-check", (req, res) => {
   try {
-     // NOTE: A more accurate library like `languagedetect` could be used, but simple heuristic:
-     // We will just proxy to a fast free API for better accuracy
-     const text = req.query.text as string;
-     if (!text) return res.status(400).json({ error: "Missing text parameter" });
-     res.json({ success: true, data: { note: "Currently using mock/simple detection", provided_text: text }});
+     const word = req.query.word as string;
+     if (!word) return res.status(400).json({ error: "Missing word parameter" });
+     
+     const corpus = ["hello", "world", "computer", "science", "programming", "javascript", "typescript", "python", "developer", "engineer"];
+     const spellcheck = new natural.Spellcheck(corpus);
+     
+     const isCorrect = spellcheck.isCorrect(word.toLowerCase());
+     const corrections = spellcheck.getCorrections(word.toLowerCase(), 1);
+
+     res.json({ success: true, data: { original: word, isCorrect, suggestions: corrections }});
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

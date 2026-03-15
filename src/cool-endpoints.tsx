@@ -1,17 +1,17 @@
 import React from "react";
-import { Sparkles, BrainCircuit, FileCode2, BookOpenText } from "lucide-react";
+import { Globe, BrainCircuit, FileCode2, BookOpenText, SearchCode } from "lucide-react";
 
 export const coolEndpoints = [
   {
-    id: "ai-gemini",
-    title: "Gemini AI Chat",
+    id: "tools-websearch",
+    title: "DuckDuckGo Web Search",
     category: "AI & Smart Tools",
-    method: "POST",
-    path: "/api/ai/gemini",
-    description: "Generate text using Google's Gemini 2.5 Flash AI model. (Requires GEMINI_API_KEY environment variable on server).",
-    body: [{ name: "prompt", type: "string", description: "Prompt for the AI" }],
-    icon: <Sparkles className="w-5 h-5" />,
-    example: '{"prompt": "Tuliskan puisi pendek tentang coding"}',
+    method: "GET",
+    path: "/api/tools/image-search",
+    description: "Search the web directly using DuckDuckGo to get top results and links.",
+    params: [{ name: "q", type: "string", description: "Search query" }],
+    icon: <Globe className="w-5 h-5" />,
+    example: "/api/tools/image-search?q=cat+memes",
   },
   {
     id: "nlp-sentiment",
@@ -23,6 +23,17 @@ export const coolEndpoints = [
     params: [{ name: "text", type: "string", description: "English sentence to analyze" }],
     icon: <BrainCircuit className="w-5 h-5" />,
     example: "/api/nlp/sentiment?text=I+absolutely+love+this+amazing+api",
+  },
+  {
+    id: "nlp-spellcheck",
+    title: "Spell Checker",
+    category: "AI & Smart Tools",
+    method: "GET",
+    path: "/api/nlp/spell-check",
+    description: "Check if a common English tech word is spelled correctly and get suggestions.",
+    params: [{ name: "word", type: "string", description: "Single word to check" }],
+    icon: <SearchCode className="w-5 h-5" />,
+    example: "/api/nlp/spell-check?word=javascrip",
   },
   {
     id: "tools-html2md",
