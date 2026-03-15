@@ -367,12 +367,22 @@ export default function App() {
                         type="text"
                         value={cookieInput}
                         onChange={(e) => setCookieInput(e.target.value)}
-                        placeholder="SID=...; HSID=...;" 
+                        placeholder="SID=...; HSID=...;"
                         className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                       />
                       <p className="text-xs text-zinc-500 mt-1">
                         Optional: add YouTube cookies if the video requires sign-in.
                       </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleTest}
+                    disabled={loading || (activeEndpoint.id !== "uuid" && !testInput)}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold px-6 py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <div className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
                     ) : (
                       <>
                         Send Request
