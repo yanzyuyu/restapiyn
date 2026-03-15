@@ -103,7 +103,7 @@ export default function App() {
     try {
       if (activeEndpoint.id === "yt-mp3") {
         const downloadUrl = `${activeEndpoint.path}?${activeEndpoint.params[0].name}=${encodeURIComponent(
-          testInput
+          testInput,
         )}`;
         setResponse({ downloadUrl });
         return;
@@ -179,7 +179,9 @@ export default function App() {
                   >
                     <div
                       className={`${
-                        activeEndpoint.id === ep.id ? "text-emerald-400" : "text-zinc-500"
+                        activeEndpoint.id === ep.id
+                          ? "text-emerald-400"
+                          : "text-zinc-500"
                       }`}
                     >
                       {ep.icon}
@@ -231,17 +233,24 @@ export default function App() {
                       className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors rounded-md hover:bg-zinc-800"
                       title="Copy URL"
                     >
-                      {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {copied ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 {/* Parameters */}
-                {(activeEndpoint.params?.length > 0 || activeEndpoint.body?.length > 0) && (
+                {(activeEndpoint.params?.length > 0 ||
+                  activeEndpoint.body?.length > 0) && (
                   <div>
                     <h3 className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
                       <Code2 className="w-4 h-4 text-zinc-500" />
-                      {activeEndpoint.method === "GET" ? "Query Parameters" : "Request Body"}
+                      {activeEndpoint.method === "GET"
+                        ? "Query Parameters"
+                        : "Request Body"}
                     </h3>
                     <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
                       <table className="w-full text-sm text-left">
@@ -249,17 +258,30 @@ export default function App() {
                           <tr>
                             <th className="px-4 py-3 font-medium">Name</th>
                             <th className="px-4 py-3 font-medium">Type</th>
-                            <th className="px-4 py-3 font-medium">Description</th>
+                            <th className="px-4 py-3 font-medium">
+                              Description
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-800/50">
-                          {(activeEndpoint.params || activeEndpoint.body).map((param, idx) => (
-                            <tr key={idx} className="hover:bg-zinc-900/30 transition-colors">
-                              <td className="px-4 py-3 font-mono text-emerald-400">{param.name}</td>
-                              <td className="px-4 py-3 font-mono text-zinc-500">{param.type}</td>
-                              <td className="px-4 py-3 text-zinc-400">{param.description}</td>
-                            </tr>
-                          ))}
+                          {(activeEndpoint.params || activeEndpoint.body).map(
+                            (param, idx) => (
+                              <tr
+                                key={idx}
+                                className="hover:bg-zinc-900/30 transition-colors"
+                              >
+                                <td className="px-4 py-3 font-mono text-emerald-400">
+                                  {param.name}
+                                </td>
+                                <td className="px-4 py-3 font-mono text-zinc-500">
+                                  {param.type}
+                                </td>
+                                <td className="px-4 py-3 text-zinc-400">
+                                  {param.description}
+                                </td>
+                              </tr>
+                            ),
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -318,8 +340,8 @@ export default function App() {
                           activeEndpoint.id === "yt-search"
                             ? "never gonna give you up"
                             : activeEndpoint.id === "yt-download"
-                            ? "https://youtube.com/watch?v=..."
-                            : "Hello World"
+                              ? "https://youtube.com/watch?v=..."
+                              : "Hello World"
                         }`}
                         className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                       />
@@ -328,7 +350,9 @@ export default function App() {
 
                   <button
                     onClick={handleTest}
-                    disabled={loading || (activeEndpoint.id !== "uuid" && !testInput)}
+                    disabled={
+                      loading || (activeEndpoint.id !== "uuid" && !testInput)
+                    }
                     className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold px-6 py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
@@ -346,28 +370,44 @@ export default function App() {
                 {response && (
                   <div className="mt-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium text-zinc-300">Response</h3>
+                      <h3 className="text-sm font-medium text-zinc-300">
+                        Response
+                      </h3>
                       <span
                         className={`text-xs font-semibold px-2 py-1 rounded ${
-                          response.success || response.uuid || response.qrDataUrl || response.result || response.downloadUrl
+                          response.success ||
+                          response.uuid ||
+                          response.qrDataUrl ||
+                          response.result ||
+                          response.downloadUrl
                             ? "bg-emerald-500/10 text-emerald-400"
                             : "bg-red-500/10 text-red-400"
                         }`}
                       >
-                        {response.success || response.uuid || response.qrDataUrl || response.result || response.downloadUrl
+                        {response.success ||
+                        response.uuid ||
+                        response.qrDataUrl ||
+                        response.result ||
+                        response.downloadUrl
                           ? "200 OK"
                           : "Error"}
                       </span>
                     </div>
                     <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-x-auto">
-                      {activeEndpoint.id === "qrcode" && response.data?.qrDataUrl ? (
+                      {activeEndpoint.id === "qrcode" &&
+                      response.data?.qrDataUrl ? (
                         <div className="flex flex-col items-center gap-4">
-                          <img src={response.data.qrDataUrl} alt="QR Code" className="w-48 h-48 bg-white p-2 rounded-lg" />
+                          <img
+                            src={response.data.qrDataUrl}
+                            alt="QR Code"
+                            className="w-48 h-48 bg-white p-2 rounded-lg"
+                          />
                           <pre className="text-xs text-zinc-400 font-mono w-full overflow-x-auto">
                             {JSON.stringify(response, null, 2)}
                           </pre>
                         </div>
-                      ) : activeEndpoint.id === "yt-mp3" && response.downloadUrl ? (
+                      ) : activeEndpoint.id === "yt-mp3" &&
+                        response.downloadUrl ? (
                         <div className="space-y-3">
                           <a
                             href={response.downloadUrl}
