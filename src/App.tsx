@@ -17,8 +17,9 @@ import {
   RefreshCw,
   Clock
 } from "lucide-react";
+import { extraEndpoints } from "./extra-endpoints";
 
-const endpoints = [
+const baseEndpoints = [
   {
     id: "yt-search",
     title: "YouTube Search",
@@ -83,6 +84,8 @@ const endpoints = [
     example: '{"action": "encode", "text": "Hello World"}',
   },
 ];
+
+const endpoints = [...baseEndpoints, ...extraEndpoints];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"docs" | "monitor">("docs");
