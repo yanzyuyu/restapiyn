@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { extraRouter } from "./extra-router.js";
 import { usefulRouter } from "./useful-router.js";
 import { coolRouter } from "./cool-router.js";
+import { freeToolsRouter } from "./free-tools-router.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -45,6 +46,7 @@ async function startServer() {
   app.use("/api", extraRouter);
   app.use("/api", usefulRouter);
   app.use("/api", coolRouter);
+  app.use("/api", freeToolsRouter);
 
   // API Routes
   app.get("/api/logs", (req, res) => {

@@ -22,6 +22,7 @@ import {
 import { extraEndpoints } from "./extra-endpoints";
 import { usefulEndpoints } from "./useful-endpoints";
 import { coolEndpoints } from "./cool-endpoints";
+import { freeToolsEndpoints } from "./free-tools-endpoints";
 
 const baseEndpoints = [
   {
@@ -139,7 +140,7 @@ const baseEndpoints = [
   },
 ];
 
-const endpoints = [...baseEndpoints, ...usefulEndpoints, ...coolEndpoints, ...extraEndpoints];
+const endpoints = [...baseEndpoints, ...usefulEndpoints, ...coolEndpoints, ...freeToolsEndpoints, ...extraEndpoints];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"docs" | "monitor">("docs");
@@ -157,7 +158,8 @@ export default function App() {
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     "Downloader Tools": true,
     "AI & Smart Tools": true,
-    "Useful Information": true
+    "Useful Information": true,
+    "Image Generators": true
   });
 
   const toggleCategory = (cat: string) => {
