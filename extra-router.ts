@@ -50,7 +50,11 @@ route("/crypto/sha512", req => crypto.createHash("sha512").update(String(req.que
 route("/crypto/random-hex", req => crypto.randomBytes(Number(req.query.size || 16)).toString("hex"));
 route("/crypto/random-base64", req => crypto.randomBytes(Number(req.query.size || 16)).toString("base64"));
 route("/crypto/uuid-v4", () => crypto.randomUUID());
-route("/crypto/rot13", req => String(req.query.text || "").replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= "Z" ? 90 : 122) >= (c: any = c.charCodeAt(0) + 13) ? c : c - 26)));
+route("/crypto/rot13", req => String(req.query.text || "").replace(/[a-zA-Z]/g, c => {
+    let charCode = c.charCodeAt(0) + 13;
+    const limit = c <= "Z" ? 90 : 122;
+    return String.fromCharCode(limit >= charCode ? charCode : charCode - 26);
+}));
 route("/crypto/btoa", req => Buffer.from(String(req.query.text || "")).toString("base64"));
 route("/crypto/atob", req => Buffer.from(String(req.query.text || ""), "base64").toString("utf8"));
 
