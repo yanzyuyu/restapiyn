@@ -97,43 +97,91 @@ async function startServer() {
     }
   });
 
-  // 2b. YouTube MP3 download endpoint (streams mp3 audio)
+  // 2b. YouTube MP3 endpoint
+  // If ?stream=true is provided, this streams the mp3 directly.
+  // Otherwise it returns JSON similar to /api/yt/download.
   app.get("/api/yt/ytmp3", async (req, res) => {
     const url = req.query.url as string;
+    const stream = req.query.stream === "true" || req.query.stream === "1";
+
     if (!url) {
       return res.status(400).json({ error: "Invalid or missing YouTube URL" });
     }
 
     try {
-      res.setHeader("Content-Type", "audio/mpeg");
-      res.setHeader("Content-Disposition", "attachment; filename=download.mp3");
-      res.setHeader("Cache-Control", "no-store");
-
-      const subprocess = youtubedl.exec(
-        url,
-        {
-          extractAudio: true,
-          audioFormat: "mp3",
-          output: "-",
-          noCheckCertificates: true,
-          noWarnings: true,
-          preferFreeFormats: true,
-        },
-        { stdio: ["ignore", "pipe", "pipe"] }
-      );
-
-      subprocess.stdout.pipe(res);
-      subprocess.stderr.pipe(process.stderr);
-
-      req.on("close", () => {
-        try {
-          subprocess.kill("SIGKILL");
-        } catch {
-          // ignore
-        }
+      const info = await youtubedl(url, {
+        dumpJson: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+        preferFreeFormats: true,
       });
-    } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
+
+      const audioFormats = (info.formats || [])
+        .filter((f: any) => f.acodec !== "none" && f.vcodec === "none")
+        .map((f: any) => ({
+          quality: f.abr ? `${f.abr}kbps` : "unknown",
+          url: f.url,
+          mimeType: f.ext,
+          ext: f.ext,
+        }));
+
+      const mp3Formats = audioFormats.filter((f: any) => f.ext === "mp3");
+      const best = mp3Formats[0] || audioFormats[0];
+
+      if (stream) {
+        if (!best?.url) {
+          return res.status(400).json({
+            success: false,
+            error: "No streamable MP3 format available for this video.",
+          });
+        }
+
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Disposition", "attachment; filename=download.mp3");
+        res.setHeader("Cache-Control", "no-store");
+
+        const subprocess = youtubedl.exec(
+          url,
+          {
+            extractAudio: true,
+            audioFormat: "mp3",
+            output: "-",
+            noCheckCertificates: true,
+            noWarnings: true,
+            preferFreeFormats: true,
+          },
+          { stdio: ["ignore", "pipe", "pipe"] }
+        );
+
+        subprocess.stdout.pipe(res);
+        subprocess.stderr.pipe(process.stderr);
+
+        req.on("close", () => {
+          try {
+            subprocess.kill("SIGKILL");
+          } catch {
+            // ignore
+          }
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: {
+          title: info.title,
+          thumbnail: info.thumbnail,
+          duration: info.duration,
+          downloadUrl: best?.url || null,
+          formats: audioFormats,
+        },
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        success: false,
+        error: "Gagal mengambil data dari YouTube. Mungkin diblokir atau URL tidak valid.",
+        originalError: err.message,
+      });
     }
   });
 
