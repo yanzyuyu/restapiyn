@@ -172,12 +172,18 @@ async function startServer() {
         return;
       }
 
+      const host = `${req.protocol}://${req.get("host")}`;
+      const streamUrl = `${host}/api/yt/ytmp3?url=${encodeURIComponent(url)}&stream=true${
+        cookies ? `&cookies=${encodeURIComponent(cookies)}` : ""
+      }`;
+
       res.json({
         success: true,
         data: {
           title: info.title,
           thumbnail: info.thumbnail,
           duration: info.duration,
+          streamUrl,
           downloadUrl: best?.url || null,
           formats: audioFormats,
         },

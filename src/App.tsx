@@ -432,11 +432,10 @@ export default function App() {
                             {JSON.stringify(response, null, 2)}
                           </pre>
                         </div>
-                      ) : activeEndpoint.id === "yt-mp3" &&
-                        response.downloadUrl ? (
+                      ) : activeEndpoint.id === "yt-mp3" && response.streamUrl ? (
                         <div className="space-y-3">
                           <a
-                            href={response.downloadUrl}
+                            href={response.streamUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20"
