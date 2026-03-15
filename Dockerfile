@@ -1,7 +1,7 @@
 # Dockerfile for Railway (or any Docker-based deployment)
 # Ensures Python 3 is available for youtube-dl-exec (yt-dlp) + runs the Node server.
 
-FROM node:20-bullseye
+FROM node:20-bookworm
 
 # Install python3 (required by yt-dlp when invoked via youtube-dl-exec)
 RUN apt-get update \
