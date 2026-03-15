@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
   app.use(cors());
   app.use(express.json());
@@ -55,10 +55,8 @@ async function startServer() {
           noCheckCertificates: true,
           noWarnings: true,
           preferFreeFormats: true,
-          addHeader: [
-            'referer:youtube.com',
-            'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
-          ]
+          // remove custom headers on Windows: passing User-Agent with spaces can break argument parsing
+          // (youtube-dl-exec spawns a shell and splits args, causing invalid URL errors).
         });
         
         const videoFormats = info.formats
@@ -94,6 +92,46 @@ async function startServer() {
           originalError: err.message
         });
       }
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // 2b. YouTube MP3 download endpoint (streams mp3 audio)
+  app.get("/api/yt/ytmp3", async (req, res) => {
+    const url = req.query.url as string;
+    if (!url) {
+      return res.status(400).json({ error: "Invalid or missing YouTube URL" });
+    }
+
+    try {
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Disposition", "attachment; filename=download.mp3");
+      res.setHeader("Cache-Control", "no-store");
+
+      const subprocess = youtubedl.exec(
+        url,
+        {
+          extractAudio: true,
+          audioFormat: "mp3",
+          output: "-",
+          noCheckCertificates: true,
+          noWarnings: true,
+          preferFreeFormats: true,
+        },
+        { stdio: ["ignore", "pipe", "pipe"] }
+      );
+
+      subprocess.stdout.pipe(res);
+      subprocess.stderr.pipe(process.stderr);
+
+      req.on("close", () => {
+        try {
+          subprocess.kill("SIGKILL");
+        } catch {
+          // ignore
+        }
+      });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }

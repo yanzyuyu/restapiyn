@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Search,
   Download,
+  Music,
   QrCode,
   Hash,
   Binary,
@@ -35,6 +36,16 @@ const endpoints = [
     params: [{ name: "url", type: "string", description: "YouTube video URL" }],
     icon: <Download className="w-5 h-5" />,
     example: "/api/yt/download?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  },
+  {
+    id: "yt-mp3",
+    title: "YouTube MP3",
+    method: "GET",
+    path: "/api/yt/ytmp3",
+    description: "Download MP3 audio from a YouTube URL.",
+    params: [{ name: "url", type: "string", description: "YouTube video URL" }],
+    icon: <Music className="w-5 h-5" />,
+    example: "/api/yt/ytmp3?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "qrcode",
@@ -88,7 +99,16 @@ export default function App() {
   const handleTest = async () => {
     setLoading(true);
     setResponse(null);
+
     try {
+      if (activeEndpoint.id === "yt-mp3") {
+        const downloadUrl = `${activeEndpoint.path}?${activeEndpoint.params[0].name}=${encodeURIComponent(
+          testInput
+        )}`;
+        setResponse({ downloadUrl });
+        return;
+      }
+
       let res;
       if (activeEndpoint.method === "GET") {
         let url = activeEndpoint.path;
@@ -329,18 +349,35 @@ export default function App() {
                       <h3 className="text-sm font-medium text-zinc-300">Response</h3>
                       <span
                         className={`text-xs font-semibold px-2 py-1 rounded ${
-                          response.success || response.uuid || response.qrDataUrl || response.result
+                          response.success || response.uuid || response.qrDataUrl || response.result || response.downloadUrl
                             ? "bg-emerald-500/10 text-emerald-400"
                             : "bg-red-500/10 text-red-400"
                         }`}
                       >
-                        {response.success || response.uuid || response.qrDataUrl || response.result ? "200 OK" : "Error"}
+                        {response.success || response.uuid || response.qrDataUrl || response.result || response.downloadUrl
+                          ? "200 OK"
+                          : "Error"}
                       </span>
                     </div>
                     <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-x-auto">
                       {activeEndpoint.id === "qrcode" && response.data?.qrDataUrl ? (
                         <div className="flex flex-col items-center gap-4">
                           <img src={response.data.qrDataUrl} alt="QR Code" className="w-48 h-48 bg-white p-2 rounded-lg" />
+                          <pre className="text-xs text-zinc-400 font-mono w-full overflow-x-auto">
+                            {JSON.stringify(response, null, 2)}
+                          </pre>
+                        </div>
+                      ) : activeEndpoint.id === "yt-mp3" && response.downloadUrl ? (
+                        <div className="space-y-3">
+                          <a
+                            href={response.downloadUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/20"
+                          >
+                            Download MP3
+                            <ChevronRight className="w-4 h-4" />
+                          </a>
                           <pre className="text-xs text-zinc-400 font-mono w-full overflow-x-auto">
                             {JSON.stringify(response, null, 2)}
                           </pre>
