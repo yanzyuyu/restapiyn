@@ -109,13 +109,19 @@ async function startServer() {
     }
 
     try {
-      const info = await youtubedl(url, {
+      const cookies = req.query.cookies as string | undefined;
+      const ytdlpOptions: any = {
         dumpJson: true,
         noCheckCertificates: true,
         noWarnings: true,
         preferFreeFormats: true,
-      });
+      };
 
+      if (cookies) {
+        ytdlpOptions.addHeader = [`cookie: ${cookies}`];
+      }
+
+      const info = await youtubedl(url, ytdlpOptions);
       const audioFormats = (info.formats || [])
         .filter((f: any) => f.acodec !== "none" && f.vcodec === "none")
         .map((f: any) => ({
