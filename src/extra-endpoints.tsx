@@ -2,7 +2,7 @@ import React from "react";
 import { Type, Calculator, Shield, Smile } from "lucide-react";
 
 const createStrEp = (id: string, title: string, path: string) => ({
-  id, title, method: "GET", path,
+  id, title, category: "String Utilities", method: "GET", path,
   description: `String utility: ${title}`,
   params: [{ name: "text", type: "string", description: "Input text" }],
   icon: <Type className="w-5 h-5" />,
@@ -10,7 +10,7 @@ const createStrEp = (id: string, title: string, path: string) => ({
 });
 
 const createMathEp = (id: string, title: string, path: string, twoParams = false) => ({
-  id, title, method: "GET", path,
+  id, title, category: "Math Utilities", method: "GET", path,
   description: `Math utility: ${title}`,
   params: twoParams 
     ? [{ name: "a", type: "number", description: "Number a" }, { name: "b", type: "number", description: "Number b" }]
@@ -20,7 +20,7 @@ const createMathEp = (id: string, title: string, path: string, twoParams = false
 });
 
 const createCryptoEp = (id: string, title: string, path: string, param = "text") => ({
-  id, title, method: "GET", path,
+  id, title, category: "Crypto & Encoding", method: "GET", path,
   description: `Crypto utility: ${title}`,
   params: param === "none" ? [] : [{ name: param, type: param === "size" ? "number" : "string", description: `Input ${param}` }],
   icon: <Shield className="w-5 h-5" />,
@@ -28,7 +28,7 @@ const createCryptoEp = (id: string, title: string, path: string, param = "text")
 });
 
 const createFakerEp = (id: string, title: string, path: string) => ({
-  id, title, method: "GET", path,
+  id, title, category: "Fake Data", method: "GET", path,
   description: `Fake data: ${title}`,
   params: [],
   icon: <Smile className="w-5 h-5" />,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Download,
@@ -15,14 +15,17 @@ import {
   Code2,
   ChevronRight,
   RefreshCw,
-  Clock
+  Clock,
+  ChevronDown
 } from "lucide-react";
 import { extraEndpoints } from "./extra-endpoints";
+import { usefulEndpoints } from "./useful-endpoints";
 
 const baseEndpoints = [
   {
     id: "yt-search",
     title: "YouTube Search",
+    category: "YouTube Tools",
     method: "GET",
     path: "/api/yt/search",
     description: "Search for YouTube videos by keyword.",
@@ -33,6 +36,7 @@ const baseEndpoints = [
   {
     id: "yt-download",
     title: "YouTube Downloader",
+    category: "YouTube Tools",
     method: "GET",
     path: "/api/yt/download",
     description: "Get download links and video info for a YouTube URL.",
@@ -43,6 +47,7 @@ const baseEndpoints = [
   {
     id: "yt-mp3",
     title: "YouTube MP3",
+    category: "YouTube Tools",
     method: "GET",
     path: "/api/yt/ytmp3",
     description: "Download MP3 audio from a YouTube URL.",
@@ -53,6 +58,7 @@ const baseEndpoints = [
   {
     id: "qrcode",
     title: "QR Code Generator",
+    category: "Media Tools",
     method: "GET",
     path: "/api/tools/qrcode",
     description: "Generate a QR code from text or URL.",
@@ -63,6 +69,7 @@ const baseEndpoints = [
   {
     id: "uuid",
     title: "UUID Generator",
+    category: "Tools & Utilities",
     method: "GET",
     path: "/api/tools/uuid",
     description: "Generate a random UUID v4.",
@@ -73,6 +80,7 @@ const baseEndpoints = [
   {
     id: "base64",
     title: "Base64 Encoder/Decoder",
+    category: "Tools & Utilities",
     method: "POST",
     path: "/api/tools/base64",
     description: "Encode or decode text to/from Base64.",
@@ -85,7 +93,7 @@ const baseEndpoints = [
   },
 ];
 
-const endpoints = [...baseEndpoints, ...extraEndpoints];
+const endpoints = [...baseEndpoints, ...usefulEndpoints, ...extraEndpoints];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"docs" | "monitor">("docs");
@@ -98,6 +106,25 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [cookieInput, setCookieInput] = useState("");
+
+  // Accordion State for Categories
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
+    "YouTube Tools": true,
+    "Useful Information": true
+  });
+
+  const toggleCategory = (cat: string) => {
+    setOpenCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  const categories = useMemo(() => {
+    const cats: Record<string, typeof endpoints> = {};
+    endpoints.forEach(ep => {
+      if (!cats[ep.category]) cats[ep.category] = [];
+      cats[ep.category].push(ep);
+    });
+    return cats;
+  }, []);
 
   // Monitor State
   const [logs, setLogs] = useState<any[]>([]);
@@ -141,10 +168,15 @@ export default function App() {
       if (activeEndpoint.method === "GET") {
         let url = activeEndpoint.path;
         const params: string[] = [];
-        if (activeEndpoint.params.length > 0) {
-          params.push(
-            `${activeEndpoint.params[0].name}=${encodeURIComponent(testInput)}`,
-          );
+        if (activeEndpoint.params?.length > 0) {
+          if (activeEndpoint.params.length === 2 && activeEndpoint.params[0].name === "a" && activeEndpoint.params[1].name === "b") {
+             // quick fix for math 2 params test UI
+             const parts = testInput.split(',');
+             params.push(`a=${encodeURIComponent(parts[0] || '0')}`);
+             params.push(`b=${encodeURIComponent(parts[1] || '0')}`);
+          } else {
+             params.push(`${activeEndpoint.params[0].name}=${encodeURIComponent(testInput)}`);
+          }
         }
         if (cookieInput) {
           params.push(`cookies=${encodeURIComponent(cookieInput)}`);
@@ -160,8 +192,15 @@ export default function App() {
           body: JSON.stringify({ action: testAction, text: testInput }),
         });
       }
-      const data = await res.json();
-      setResponse(data);
+      
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        setResponse(data);
+      } else {
+        const textData = await res.text();
+        setResponse({ raw: textData });
+      }
     } catch (error: any) {
       setResponse({ error: error.message });
     } finally {
@@ -216,41 +255,48 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === "docs" ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Sidebar */}
-            <div className="lg:col-span-3 space-y-6">
-              <div>
-                <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 px-3">
-                  Endpoints
-                </h2>
-                <nav className="space-y-1">
-                  {endpoints.map((ep) => (
-                    <button
-                      key={ep.id}
-                      onClick={() => {
-                        setActiveEndpoint(ep);
-                        setTestInput("");
-                        setResponse(null);
-                      }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
-                        activeEndpoint.id === ep.id
-                          ? "bg-zinc-800/80 text-zinc-100 shadow-sm border border-zinc-700/50"
-                          : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
-                      }`}
-                    >
-                      <div
-                        className={`${
+            {/* Sidebar with Accordion */}
+            <div className="lg:col-span-3 space-y-4 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2 custom-scrollbar">
+              {Object.entries(categories).map(([category, eps]) => (
+                <div key={category} className="mb-2">
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-zinc-400 uppercase tracking-wider hover:text-zinc-200 transition-colors"
+                  >
+                    <span>{category}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${openCategories[category] ? "rotate-180" : ""}`} />
+                  </button>
+                  
+                  <div className={`space-y-1 mt-2 overflow-hidden transition-all duration-300 ${openCategories[category] ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}>
+                    {eps.map((ep) => (
+                      <button
+                        key={ep.id}
+                        onClick={() => {
+                          setActiveEndpoint(ep);
+                          setTestInput("");
+                          setResponse(null);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
                           activeEndpoint.id === ep.id
-                            ? "text-emerald-400"
-                            : "text-zinc-500"
+                            ? "bg-zinc-800/80 text-zinc-100 shadow-sm border border-zinc-700/50"
+                            : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
                         }`}
                       >
-                        {ep.icon}
-                      </div>
-                      <span className="font-medium">{ep.title}</span>
-                    </button>
-                  ))}
-                </nav>
-              </div>
+                        <div
+                          className={`${
+                            activeEndpoint.id === ep.id
+                              ? "text-emerald-400"
+                              : "text-zinc-500"
+                          }`}
+                        >
+                          {ep.icon}
+                        </div>
+                        <span className="font-medium text-left truncate">{ep.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Main Content */}
@@ -259,9 +305,14 @@ export default function App() {
               <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-sm">
                 <div className="p-6 border-b border-zinc-800/50">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-semibold text-zinc-100 tracking-tight">
-                      {activeEndpoint.title}
-                    </h2>
+                    <div>
+                      <span className="text-xs font-semibold text-emerald-500 uppercase tracking-wider mb-1 block">
+                        {activeEndpoint.category}
+                      </span>
+                      <h2 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+                        {activeEndpoint.title}
+                      </h2>
+                    </div>
                     <span
                       className={`px-2.5 py-1 rounded-md text-xs font-bold tracking-wider ${
                         activeEndpoint.method === "GET"
@@ -387,10 +438,10 @@ export default function App() {
                       </div>
                     )}
 
-                    {activeEndpoint.id !== "uuid" && (
+                    {activeEndpoint.params?.length > 0 && activeEndpoint.id !== "uuid" && (
                       <div>
                         <label className="block text-sm font-medium text-zinc-400 mb-2">
-                          {activeEndpoint.params?.[0]?.description || "Input"}
+                          {activeEndpoint.params.length === 2 && activeEndpoint.params[0].name === "a" ? "Input (comma separated, e.g. 5,10)" : activeEndpoint.params[0]?.description || "Input"}
                         </label>
                         <input
                           type="text"
@@ -401,7 +452,9 @@ export default function App() {
                               ? "never gonna give you up"
                               : activeEndpoint.id === "yt-download" || activeEndpoint.id === "yt-mp3"
                               ? "https://youtube.com/watch?v=..."
-                              : "Hello World"
+                              : activeEndpoint.params.length === 2 && activeEndpoint.params[0].name === "a"
+                              ? "5,10"
+                              : "Input value"
                           }`}
                           className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                         />
@@ -428,7 +481,7 @@ export default function App() {
 
                     <button
                       onClick={handleTest}
-                      disabled={loading || (activeEndpoint.id !== "uuid" && !testInput)}
+                      disabled={loading || (activeEndpoint.params?.length > 0 && activeEndpoint.id !== "uuid" && !testInput && activeEndpoint.params[0].name !== "ip")}
                       className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold px-6 py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
@@ -455,7 +508,9 @@ export default function App() {
                             response.uuid ||
                             response.qrDataUrl ||
                             response.result ||
-                            response.downloadUrl
+                            response.downloadUrl ||
+                            response[0]?.word ||
+                            response.setup
                               ? "bg-emerald-500/10 text-emerald-400"
                               : "bg-red-500/10 text-red-400"
                           }`}
@@ -464,9 +519,11 @@ export default function App() {
                           response.uuid ||
                           response.qrDataUrl ||
                           response.result ||
-                          response.downloadUrl
+                          response.downloadUrl ||
+                          response[0]?.word ||
+                          response.setup
                             ? "200 OK"
-                            : "Error"}
+                            : "Result / Error"}
                         </span>
                       </div>
                       <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 overflow-x-auto">
@@ -477,6 +534,17 @@ export default function App() {
                               src={response.data.qrDataUrl}
                               alt="QR Code"
                               className="w-48 h-48 bg-white p-2 rounded-lg"
+                            />
+                            <pre className="text-xs text-zinc-400 font-mono w-full overflow-x-auto">
+                              {JSON.stringify(response, null, 2)}
+                            </pre>
+                          </div>
+                        ) : activeEndpoint.id === "tools-screenshot" && response.data?.screenshotUrl ? (
+                            <div className="flex flex-col items-center gap-4">
+                            <img
+                              src={response.data.screenshotUrl}
+                              alt="Screenshot"
+                              className="w-full max-w-md rounded-lg shadow-lg border border-zinc-700"
                             />
                             <pre className="text-xs text-zinc-400 font-mono w-full overflow-x-auto">
                               {JSON.stringify(response, null, 2)}
@@ -497,7 +565,7 @@ export default function App() {
                                 </a>
                               </div>
                             )}
-                            <pre className="text-sm text-zinc-300 font-mono">
+                            <pre className="text-sm text-zinc-300 font-mono whitespace-pre-wrap break-all">
                               {JSON.stringify(response, null, 2)}
                             </pre>
                           </>
@@ -555,7 +623,7 @@ export default function App() {
                               {log.method}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-mono text-zinc-300">
+                          <td className="px-6 py-4 font-mono text-zinc-300 truncate max-w-[200px]" title={log.url}>
                             {log.url}
                           </td>
                           <td className="px-6 py-4">
@@ -589,6 +657,18 @@ export default function App() {
           </div>
         )}
       </main>
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #3f3f46;
+          border-radius: 20px;
+        }
+      `}} />
     </div>
   );
 }
